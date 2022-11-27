@@ -19,14 +19,15 @@ const tasks = (() => {
         return tasks;
     }
 
-    return {addTask, getTasks};
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+    }
+
+    return {addTask, getTasks, deleteTask};
 })();
 
 const newTaskBtn = document.querySelector('.new-task-button');
 const taskForm = document.querySelector('.task-form');
-const taskTitle = document.querySelector('#title');
-const taskDescription = document.querySelector('#description');
-const taskDate = document.querySelector('#date');
 const taskPriority = document.querySelector('#priority');
 const cancelFormBtn = document.querySelector('.cancel-form-button');
 
@@ -36,14 +37,25 @@ newTaskBtn.addEventListener('click', () => {
 });
 
 taskForm.addEventListener('submit', (e) => {
-    const task = new Task(taskTitle.value, taskDescription.value, taskDate.value);
+    taskForm.style.display = 'none';
+    newTaskBtn.style.display = 'block';
 
-    tasks.addTask(task);
+    createTask();
 
     displayTasks(tasks.getTasks());
 
     e.preventDefault();
 });
+
+function createTask() {
+    const taskTitle = document.querySelector('#title');
+    const taskDescription = document.querySelector('#description');
+    const taskDate = document.querySelector('#date');
+
+    const task = new Task(taskTitle.value, taskDescription.value, taskDate.value);
+
+    tasks.addTask(task);
+}
 
 function displayTasks(arr) {
     const listContainer = document.querySelector('.list-container');
@@ -66,8 +78,12 @@ function displayTasks(arr) {
         date.textContent = arr[i].date;
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.classList.add('delete-task');
+        deleteBtn.classList.add('delete-task-button');
         deleteBtn.textContent = 'delete';
+        deleteBtn.addEventListener('click', () => {
+            tasks.deleteTask(i);
+            displayTasks(tasks.getTasks());        
+        });
     
         listContainer.appendChild(task);
         task.appendChild(checkmark);
