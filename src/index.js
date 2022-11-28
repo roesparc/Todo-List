@@ -10,20 +10,42 @@ class Task {
 
 const tasks = (() => {
     const tasks = [];
-
-    function addTask(task) {
-        tasks.push(task);
-    }
+    const tasksWithCheckmark = [];
 
     function getTasks() {
         return tasks;
+    }
+
+    function addTask(task) {
+        tasks.push(task);
     }
 
     function deleteTask(index) {
         tasks.splice(index, 1);
     }
 
-    return {addTask, getTasks, deleteTask};
+    function getCheckmarks() {
+        return tasksWithCheckmark;
+    }
+
+    function addCheckmark(obj) {
+        tasksWithCheckmark.push(obj);
+    }
+
+    function removeCheckmark(obj) {
+        const index = tasksWithCheckmark.indexOf(obj);
+
+        tasksWithCheckmark.splice(index, 1);
+    }
+
+    return {
+        getTasks,
+        addTask,
+        deleteTask,
+        getCheckmarks,
+        addCheckmark,
+        removeCheckmark
+    };
 })();
 
 const newTaskBtn = document.querySelector('.new-task-button');
@@ -47,6 +69,11 @@ taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
 });
 
+cancelFormBtn.addEventListener('click', () => {
+    taskForm.style.display = 'none';
+    newTaskBtn.style.display = 'block';
+})
+
 function createTask() {
     const taskTitle = document.querySelector('#title');
     const taskDescription = document.querySelector('#description');
@@ -66,7 +93,10 @@ function displayTasks(arr) {
 
         const checkmark = document.createElement('div');
         checkmark.classList.add('checkmark');
-        checkmark.textContent = '✔';
+        verifyCheckmark(checkmark, arr[i]);
+        checkmark.addEventListener('click', () => {
+            addCheckmark(checkmark, arr[i])
+        });
 
         const title = document.createElement('h1');
         title.textContent = arr[i].title;
@@ -80,10 +110,7 @@ function displayTasks(arr) {
         const deleteBtn = document.createElement('button');
         deleteBtn.classList.add('delete-task-button');
         deleteBtn.textContent = 'delete';
-        deleteBtn.addEventListener('click', () => {
-            tasks.deleteTask(i);
-            displayTasks(tasks.getTasks());        
-        });
+        deleteBtn.addEventListener('click', () => deleteTask(i));
     
         listContainer.appendChild(task);
         task.appendChild(checkmark);
@@ -91,5 +118,27 @@ function displayTasks(arr) {
         task.appendChild(description);
         task.appendChild(date);
         task.appendChild(deleteBtn);
+    }
+}
+
+function deleteTask(index) {
+    tasks.deleteTask(index);
+
+    displayTasks(tasks.getTasks());
+}
+
+function addCheckmark(checkmark, obj) {
+    if (checkmark.textContent) {
+        checkmark.textContent = '';
+        tasks.removeCheckmark(obj);
+    } else {
+        checkmark.textContent = '✔';
+        tasks.addCheckmark(obj);
+    }
+}
+
+function verifyCheckmark(checkmark, obj) {
+    if (tasks.getCheckmarks().includes(obj)) {
+        checkmark.textContent = '✔';
     }
 }
