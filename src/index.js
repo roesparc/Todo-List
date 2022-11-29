@@ -12,7 +12,7 @@ class Task {
 const tasks = (() => {
     const tasks = [];
     const priorityTasks = [];
-    const tasksWithCheckmark = [];
+    const tasksChecked = [];
 
     function getTasks() {
         return tasks;
@@ -42,17 +42,17 @@ const tasks = (() => {
         }
     }
 
-    function getCheckmarks() {
-        return tasksWithCheckmark;
+    function getTasksChecked() {
+        return tasksChecked;
     }
 
     function modifyCheckmark(obj, type) {
         if (type === 'add') {
-            tasksWithCheckmark.push(obj);
+            tasksChecked.push(obj);
         } else {
-            const index = tasksWithCheckmark.indexOf(obj);
+            const index = tasksChecked.indexOf(obj);
 
-            tasksWithCheckmark.splice(index, 1);    
+            tasksChecked.splice(index, 1);    
         }
     }
 
@@ -61,7 +61,7 @@ const tasks = (() => {
         getPriorityTasks,
         addTask,
         deleteTask,
-        getCheckmarks,
+        getTasksChecked,
         modifyCheckmark,
     };
 })();
@@ -119,7 +119,7 @@ function task(obj, priority) {
 
     const checkmark = document.createElement('div');
     checkmark.classList.add('checkmark');
-    if (tasks.getCheckmarks().includes(obj)) {
+    if (tasks.getTasksChecked().includes(obj)) {
         checkmark.textContent = '✔';
     }
     checkmark.addEventListener('click', () => {
