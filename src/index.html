@@ -7,38 +7,70 @@
     <title>Todo List</title>
 </head>
 <body>
-    <button class="new-task-button">New Task</button>
+    <header>
+        <h1>Todo List</h1>
+    </header>
 
-    <form class="task-form">
-        <label for="title">Title:</label>
-        <input
-        type="text"
-        name="title"
-        id="title"
-        placeholder="What to do?"
-        required />
+    <nav>
+        <ul>
+            <li class="home-li selected-project">Home</li>
+            <li>Today</li>
+            <li>Next 7 Days</li>
+        </ul>
 
-        <label for="description">Description (Optional):</label>
-        <input
-        type="text"
-        name="description"
-        id="description"
-        placeholder="Enter a description for your new task" />
+        <h2>Projects</h2>
+        <ul class="projects-nav"></ul>
+        <button class="new-project-button">New Project</button>
 
-        <label for="date">Date:</label>
-        <input type="date" name="date" id="date" required>
+        <form class="project-form">
+            <input
+            type="text"
+            name="project-name"
+            id="project-name"
+            placeholder="Project Name"
+            required />
+    
+            <button>Add Project</button>
+    
+            <button type="button" class="cancel-form-project">Cancel</button>
+        </form>    
+    </nav>
 
-        <label for="priority">Mark High Priority</label>
-        <input
-        type="checkbox"
-        name="priority"
-        id="priority"
-        value="high-priority" />
+    <main>
+        <button class="new-task-button">New Task</button>
 
-        <button>Add Task</button>
-        <button type="button" class="cancel-form-button">Cancel</button>
-    </form>
+        <form class="task-form">
+            <label for="title">Title:</label>
+            <input
+            type="text"
+            name="title"
+            id="title"
+            placeholder="What to do?"
+            required />
 
-    <div class="list-container"></div>
+            <label for="description">Description (Optional):</label>
+            <input
+            type="text"
+            name="description"
+            id="description"
+            placeholder="Enter a description for your new task" />
+
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="date" required>
+
+            <label for="priority">Mark High Priority</label>
+            <input
+            type="checkbox"
+            name="priority"
+            id="priority"
+            value="high-priority" />
+
+            <button>Add Task</button>
+
+            <button type="button" class="cancel-form-button">Cancel</button>
+        </form>
+
+        <div class="tasks"></div>
+    </main>
 </body>
 </html>
