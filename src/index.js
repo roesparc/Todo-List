@@ -9,89 +9,99 @@ class Task {
     }
 }
 
-const tasks = (() => {
-    const tasks = [];
-    const priorityTasks = [];
-    const tasksChecked = [];
-
-    function getTasks() {
-        return tasks;
+class Project {
+    constructor(title) {
+        this.title = title;
+        this.tasks = [];
+        this.priorityTasks = [];
+        this.tasksChecked = [];
     }
 
-    function getPriorityTasks() {
-        return priorityTasks;
+    getTasks() {
+        return this.tasks;
     }
 
-    function addTask(task, priority) {
+    getPriorityTasks() {
+        return this.priorityTasks;
+    }
+
+    addTask(task, priority) {
         if (priority.checked) {
-            priorityTasks.push(task);
+            this.priorityTasks.push(task);
         } else {
-            tasks.push(task);
+            this.tasks.push(task);
         }
     }
 
-    function deleteTask(obj) {
+    deleteTask(obj) {
         if (obj.priority) {
-            const index = priorityTasks.indexOf(obj);
+            const index = this.priorityTasks.indexOf(obj);
 
-            priorityTasks.splice(index, 1);
+            this.priorityTasks.splice(index, 1);
         } else {
-            const index = tasks.indexOf(obj);
+            const index = this.tasks.indexOf(obj);
 
-            tasks.splice(index, 1);
+            this.tasks.splice(index, 1);
         }
     }
 
-    function getTasksChecked() {
-        return tasksChecked;
+    getTasksChecked() {
+        return this.tasksChecked;
     }
 
-    function modifyCheckmark(obj, type) {
+    modifyCheckmark(obj, type) {
         if (type === 'add') {
-            tasksChecked.push(obj);
+            this.tasksChecked.push(obj);
         } else {
-            const index = tasksChecked.indexOf(obj);
+            const index = this.tasksChecked.indexOf(obj);
 
-            tasksChecked.splice(index, 1);    
+            this.tasksChecked.splice(index, 1);    
         }
+    }
+}
+
+const projects = (() => {
+    const homeProject = new Project('Home');
+    let currentProject = homeProject;
+    const projects = [homeProject];
+
+    function addProject(project) {
+        projects.push(project);
+    }
+
+    function getProjects() {
+        return projects;
+    }
+
+    function deleteProject(obj) {
+        const index = projects.indexOf(obj);
+
+        projects.splice(index, 1);
+    }
+
+    function getCurrentProject() {
+        return currentProject;
+    }
+
+    function setCurrentProject(project) {
+        currentProject = project;
+    }
+
+    function getHomeProject() {
+        return homeProject;
     }
 
     return {
-        getTasks,
-        getPriorityTasks,
-        addTask,
-        deleteTask,
-        getTasksChecked,
-        modifyCheckmark,
+        addProject,
+        getProjects,
+        deleteProject,
+        getCurrentProject,
+        setCurrentProject,
+        getHomeProject
     };
 })();
 
-const newTaskBtn = document.querySelector('.new-task-button');
-const taskForm = document.querySelector('.task-form');
-const cancelFormBtn = document.querySelector('.cancel-form-button');
-
-newTaskBtn.addEventListener('click', () => {
-    newTaskBtn.style.display = 'none';
-    taskForm.style.display = 'block';
-});
-
-taskForm.addEventListener('submit', (e) => {
-    taskForm.style.display = 'none';
-    newTaskBtn.style.display = 'block';
-
-    createTask();
-
-    displayTasks(tasks.getPriorityTasks(), true);
-
-    e.preventDefault();
-});
-
-cancelFormBtn.addEventListener('click', () => {
-    taskForm.style.display = 'none';
-    newTaskBtn.style.display = 'block';
-})
-
-function createTask() {
+function createTask(project) {
     const taskTitle = document.querySelector('#title');
     const taskDescription = document.querySelector('#description');
     const taskDate = document.querySelector('#date');
@@ -99,7 +109,7 @@ function createTask() {
 
     const task = new Task(taskTitle.value, taskDescription.value, taskDate.value, taskPriority.checked);
 
-    tasks.addTask(task, taskPriority);
+    project.addTask(task, taskPriority);
 }
 
 function displayTasks(arr, priority) {
@@ -110,7 +120,7 @@ function displayTasks(arr, priority) {
         taskList.appendChild(task(arr[i], priority));
     }
 
-    if (priority) {displayTasks(tasks.getTasks(), false);}
+    if (priority) {displayTasks(projects.getCurrentProject().getTasks(), false);}
 }
 
 function task(obj, priority) {
@@ -119,14 +129,12 @@ function task(obj, priority) {
 
     const checkmark = document.createElement('div');
     checkmark.classList.add('checkmark');
-    if (tasks.getTasksChecked().includes(obj)) {
+    if (projects.getCurrentProject().getTasksChecked().includes(obj)) {
         checkmark.textContent = '✔';
     }
-    checkmark.addEventListener('click', () => {
-        addCheckmark(checkmark, obj)
-    });
+    checkmark.addEventListener('click', addCheckmark);
 
-    const title = document.createElement('h1');
+    const title = document.createElement('h3');
     title.textContent = obj.title;
 
     const description = document.createElement('p');
@@ -138,7 +146,23 @@ function task(obj, priority) {
     const deleteBtn = document.createElement('button');
     deleteBtn.classList.add('delete-task-button');
     deleteBtn.textContent = 'delete';
-    deleteBtn.addEventListener('click', () => deleteTask(obj));
+    deleteBtn.addEventListener('click', deleteTask);
+
+    function addCheckmark() {
+        if (checkmark.textContent) {
+            checkmark.textContent = '';
+            projects.getCurrentProject().modifyCheckmark(obj, 'remove');
+        } else {
+            checkmark.textContent = '✔';
+            projects.getCurrentProject().modifyCheckmark(obj, 'add');
+        }
+    }
+
+    function deleteTask() {
+        projects.getCurrentProject().deleteTask(obj);
+    
+        displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+    }    
 
     task.appendChild(checkmark);
     task.appendChild(title);
@@ -149,18 +173,135 @@ function task(obj, priority) {
     return task;
 }
 
-function deleteTask(obj) {
-    tasks.deleteTask(obj);
+function createProject() {
+    const projectsNav = document.querySelector('.projects-nav');
+    const projectName = document.querySelector('#project-name');
 
-    displayTasks(tasks.getPriorityTasks(), true);
+    const project = new Project(projectName.value);
+
+    projects.addProject(project);
+
+    projectsNav.appendChild(displayProject(project));
 }
 
-function addCheckmark(checkmark, obj) {
-    if (checkmark.textContent) {
-        checkmark.textContent = '';
-        tasks.modifyCheckmark(obj, 'remove');
-    } else {
-        checkmark.textContent = '✔';
-        tasks.modifyCheckmark(obj, 'add');
+function displayProject(obj) {
+    const project = document.createElement('li');
+    project.textContent = obj.title;
+    project.addEventListener('click', projectClick);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'delete';
+    deleteBtn.addEventListener('click', deleteProject);
+
+    function projectClick() {
+        setSelectedProject(project);
+    
+        projects.setCurrentProject(obj);
+    
+        displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
     }
+
+    function deleteProject() {
+        project.removeEventListener('click', projectClick);
+
+        projects.deleteProject(obj);
+
+        project.remove();
+
+        if (projects.getCurrentProject() == obj) {
+            const homeLi = document.querySelector('.home-li');
+            setSelectedProject(homeLi);
+
+            projects.setCurrentProject(projects.getHomeProject());
+    
+            displayTasks(projects.getCurrentProject().getPriorityTasks(), true);    
+        }
+    }
+
+    project.appendChild(deleteBtn);
+
+    return project;
+}
+
+function setSelectedProject(project) {
+    const listItems = document.querySelectorAll('li');
+
+    listItems.forEach(item => item.classList.remove('selected-project'));
+
+    project.classList.add('selected-project');
+}
+
+const homeLi = document.querySelector('.home-li');
+homeLi.addEventListener('click', homeClick);
+
+const newTaskBtn = document.querySelector('.new-task-button');
+newTaskBtn.addEventListener('click', newTaskClick);
+
+const taskForm = document.querySelector('.task-form');
+taskForm.addEventListener('submit', submitTask);
+
+const cancelTaskBtn = document.querySelector('.cancel-form-button');
+cancelTaskBtn.addEventListener('click', cancelTaskClick);
+
+const newProjectBtn = document.querySelector('.new-project-button');
+newProjectBtn.addEventListener('click', newProjectClick);
+
+const projectForm = document.querySelector('.project-form');
+projectForm.addEventListener('submit', projectSubmit);
+
+const cancelProjectBtn = document.querySelector('.cancel-form-project');
+cancelProjectBtn.addEventListener('click', cancelProjectClick);
+
+function homeClick() {
+    setSelectedProject(homeLi);
+
+    projects.setCurrentProject(projects.getHomeProject());
+
+    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+}
+
+function newTaskClick() {
+    newTaskBtn.style.display = 'none';
+    taskForm.style.display = 'block';
+    newProjectBtn.style.display = 'block';
+    projectForm.style.display = 'none';
+}
+
+function submitTask(event) {
+    event.preventDefault();
+
+    newTaskBtn.style.display = 'block';
+    taskForm.style.display = 'none';
+
+    createTask(projects.getCurrentProject());
+
+    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+}
+
+function cancelTaskClick() {
+    newTaskBtn.style.display = 'block';
+    taskForm.style.display = 'none';
+}
+
+function newProjectClick() {
+    newProjectBtn.style.display = 'none';
+    projectForm.style.display = 'block';
+    newTaskBtn.style.display = 'block';
+    taskForm.style.display = 'none';
+}
+
+function projectSubmit(event) {
+    event.preventDefault();
+
+    newProjectBtn.style.display = 'block';
+    projectForm.style.display = 'none';
+
+    createProject();
+
+    displayProject(projects.getProjects());
+}
+
+function cancelProjectClick() {
+    newProjectBtn.style.display = 'block';
+    projectForm.style.display = 'none';
 }
