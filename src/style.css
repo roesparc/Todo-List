@@ -7,6 +7,32 @@
     padding: 0;
 }
 
+body {
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+}
+
+header {
+    grid-column: 1 / 3;
+    font-size: 2rem;
+    margin-bottom: 4rem;
+    text-align: center;
+}
+
+nav {
+    font-size: 1.5rem;
+}
+
+ul {
+    list-style: none;
+}
+
+li {
+    margin: 1rem;
+    cursor: pointer;
+    user-select: none;
+}
+
 .task-form {
     display: none;
 }
@@ -21,4 +47,17 @@
     border: solid #000000 2px;
     border-radius: 50%;
     cursor: pointer;
+    user-select: none;
+}
+
+.high-priority-task {
+    background-color: #ff0000;
+}
+
+.project-form {
+    display: none;
+}
+
+.selected-project {
+    background-color: #808080;
 }
