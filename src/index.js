@@ -1,4 +1,5 @@
 import './style.css';
+import {isToday, parseISO} from 'date-fns';
 
 class Task {
     constructor(title, description, date, priority) {
@@ -26,7 +27,7 @@ class Project {
     }
 
     addTask(task, priority) {
-        if (priority.checked) {
+        if (priority) {
             this.priorityTasks.push(task);
         } else {
             this.tasks.push(task);
@@ -42,6 +43,12 @@ class Project {
             const index = this.tasks.indexOf(obj);
 
             this.tasks.splice(index, 1);
+        }
+
+        if (this.tasksChecked.includes(obj)) {
+            const index = this.tasksChecked.indexOf(obj);
+
+            this.tasksChecked.splice(index, 1);
         }
     }
 
@@ -109,7 +116,7 @@ function createTask(project) {
 
     const task = new Task(taskTitle.value, taskDescription.value, taskDate.value, taskPriority.checked);
 
-    project.addTask(task, taskPriority);
+    project.addTask(task, taskPriority.checked);
 }
 
 function displayTasks(arr, priority) {
@@ -131,6 +138,7 @@ function task(obj, priority) {
     checkmark.classList.add('checkmark');
     if (projects.getCurrentProject().getTasksChecked().includes(obj)) {
         checkmark.textContent = '✔';
+        // checkmark.parentNode.classList.add('checked');
     }
     checkmark.addEventListener('click', addCheckmark);
 
@@ -149,28 +157,70 @@ function task(obj, priority) {
     deleteBtn.addEventListener('click', deleteTask);
 
     function addCheckmark() {
-        if (checkmark.textContent) {
-            checkmark.textContent = '';
-            projects.getCurrentProject().modifyCheckmark(obj, 'remove');
-        } else {
-            checkmark.textContent = '✔';
-            projects.getCurrentProject().modifyCheckmark(obj, 'add');
-        }
+        displayCheckmark(checkmark);
+
+        verifyAllProjectsMarks(obj);
     }
 
     function deleteTask() {
         projects.getCurrentProject().deleteTask(obj);
     
         displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
-    }    
+    }
 
     task.appendChild(checkmark);
     task.appendChild(title);
+    title.appendChild(projectName(obj));
     task.appendChild(description);
     task.appendChild(date);
     task.appendChild(deleteBtn);
 
     return task;
+}
+
+function displayCheckmark(checkmark) {
+    if (checkmark.textContent) {
+        checkmark.textContent = '';
+        // checkmark.parentNode.classList.remove('checked');
+    } else {
+        checkmark.textContent = '✔';
+        // checkmark.parentNode.classList.add('checked');
+    }
+}
+
+function verifyAllProjectsMarks(obj) {
+    const projectsArr = projects.getProjects();
+    
+    for (let i = 0; i < projectsArr.length; i++) {
+        const tasks = projectsArr[i].tasks;
+        const priorityTasks = projectsArr[i].priorityTasks;
+        const tasksChecked = projectsArr[i].tasksChecked;
+
+        if (tasksChecked.includes(obj)) {
+            projectsArr[i].modifyCheckmark(obj, 'remove');
+        } else if (tasks.includes(obj) || priorityTasks.includes(obj)) {
+            projectsArr[i].modifyCheckmark(obj, 'add');    
+        }
+    }
+}
+
+function projectName(obj) {
+    const projectName = document.createElement('span');
+
+    if (!projects.getCurrentProject().title) {
+        const projectsArr = projects.getProjects();
+
+        for (let i = 0; i < projectsArr.length; i++) {
+            const tasks = projectsArr[i].tasks;
+
+            if (tasks.includes(obj)) {
+                projectName.textContent =
+                ` (${projectsArr[i].title})`;
+            }
+        }
+    }
+
+    return projectName;
 }
 
 function createProject() {
@@ -231,8 +281,38 @@ function setSelectedProject(project) {
     project.classList.add('selected-project');
 }
 
+function getTodayProjects() {
+    const currentProject = projects.getCurrentProject();
+    const projectsArr = projects.getProjects();
+
+    for (let i = 0; i < projectsArr.length; i++) {
+        const tasks = projectsArr[i].tasks;
+        const priorityTasks = projectsArr[i].priorityTasks;
+        const tasksChecked = projectsArr[i].tasksChecked;
+
+        for (let u = 0; u < tasks.length; u++) {
+            if (isToday(parseISO(tasks[u].date))) {
+                currentProject.addTask(tasks[u]);
+            }
+        }
+
+        for (let u = 0; u < priorityTasks.length; u++) {
+            if (isToday(parseISO(priorityTasks[u].date))) {
+                currentProject.addTask(priorityTasks[u], true);
+            }
+        }
+
+        for (let o = 0; o < tasksChecked.length; o++) {
+            currentProject.modifyCheckmark(tasksChecked[o], 'add');
+        }
+    }
+}
+
 const homeLi = document.querySelector('.home-li');
 homeLi.addEventListener('click', homeClick);
+
+const todayLi = document.querySelector('.today-li');
+todayLi.addEventListener('click', todayClick)
 
 const newTaskBtn = document.querySelector('.new-task-button');
 newTaskBtn.addEventListener('click', newTaskClick);
@@ -256,6 +336,18 @@ function homeClick() {
     setSelectedProject(homeLi);
 
     projects.setCurrentProject(projects.getHomeProject());
+
+    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+
+    console.log(projects.getProjects())
+}
+
+function todayClick() {    
+    setSelectedProject(todayLi);
+
+    projects.setCurrentProject(new Project());
+
+    getTodayProjects();
 
     displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
 }
