@@ -267,6 +267,8 @@ function displayProject(obj) {
 
         dynamicShow(['newTaskBtn', 'newProjectBtn']);
         dynamicHide(['taskForm', 'projectForm']);
+
+        displayProjectName();
     }
 
     function deleteProject() {
@@ -352,6 +354,18 @@ function getWeekProjects() {
     });
 }
 
+function displayProjectName(title) {
+    const currentProject = projects.getCurrentProject();
+
+    const projectName = document.querySelector('.project-name');
+
+    if (currentProject.title) {
+        projectName.textContent = currentProject.title;
+    } else {
+        projectName.textContent = title;
+    }
+}
+
 const homeLi = document.querySelector('.home-li');
 homeLi.addEventListener('click', homeClick);
 
@@ -388,6 +402,8 @@ function homeClick() {
 
     dynamicShow(['newTaskBtn', 'newProjectBtn']);
     dynamicHide(['taskForm', 'projectForm']);
+
+    displayProjectName();
 }
 
 function todayClick() {
@@ -401,6 +417,8 @@ function todayClick() {
 
     dynamicShow(['newProjectBtn']);
     dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
+
+    displayProjectName('Today');
 }
 
 function weekClick() {
@@ -414,6 +432,8 @@ function weekClick() {
 
     dynamicShow(['newProjectBtn']);
     dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
+
+    displayProjectName('This Week');
 }
 
 function newTaskClick() {
