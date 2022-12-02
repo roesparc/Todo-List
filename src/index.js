@@ -18,14 +18,6 @@ class Project {
         this.tasksChecked = [];
     }
 
-    getTasks() {
-        return this.tasks;
-    }
-
-    getPriorityTasks() {
-        return this.priorityTasks;
-    }
-
     addTask(task, priority) {
         if (priority) {
             this.priorityTasks.push(task);
@@ -50,10 +42,6 @@ class Project {
 
             this.tasksChecked.splice(index, 1);
         }
-    }
-
-    getTasksChecked() {
-        return this.tasksChecked;
     }
 
     modifyCheckmark(obj, type) {
@@ -119,15 +107,22 @@ function createTask(project) {
     project.addTask(task, taskPriority.checked);
 }
 
-function displayTasks(arr, priority) {
+function displayTasks(priority) {
     const taskList = document.querySelector('.tasks');
     if (priority) {taskList.textContent = '';}
 
-    for (let i = 0; i < arr.length; i++) {
-        taskList.appendChild(task(arr[i], priority));
+    let tasks;
+    if (priority) {
+        tasks = projects.getCurrentProject().priorityTasks;
+    } else {
+        tasks = projects.getCurrentProject().tasks;
     }
 
-    if (priority) {displayTasks(projects.getCurrentProject().getTasks(), false);}
+    tasks.forEach(taskObj => {
+        taskList.appendChild(task(taskObj, priority));
+    });
+
+    if (priority) {displayTasks(false);}
 }
 
 function task(obj, priority) {
@@ -136,7 +131,7 @@ function task(obj, priority) {
 
     const checkmark = document.createElement('div');
     checkmark.classList.add('checkmark');
-    if (projects.getCurrentProject().getTasksChecked().includes(obj)) {
+    if (projects.getCurrentProject().tasksChecked.includes(obj)) {
         checkmark.textContent = '✔';
         // checkmark.parentNode.classList.add('checked');
     }
@@ -164,8 +159,10 @@ function task(obj, priority) {
 
     function deleteTask() {
         projects.getCurrentProject().deleteTask(obj);
+
+        deleteProjectTask(obj);
     
-        displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+        displayTasks(true);
     }
 
     task.appendChild(checkmark);
@@ -191,17 +188,29 @@ function displayCheckmark(checkmark) {
 function verifyAllProjectsMarks(obj) {
     const projectsArr = projects.getProjects();
     
-    for (let i = 0; i < projectsArr.length; i++) {
-        const tasks = projectsArr[i].tasks;
-        const priorityTasks = projectsArr[i].priorityTasks;
-        const tasksChecked = projectsArr[i].tasksChecked;
-
-        if (tasksChecked.includes(obj)) {
-            projectsArr[i].modifyCheckmark(obj, 'remove');
-        } else if (tasks.includes(obj) || priorityTasks.includes(obj)) {
-            projectsArr[i].modifyCheckmark(obj, 'add');    
+    projectsArr.forEach(project => {
+        if (project.tasksChecked.includes(obj)) {
+            project.modifyCheckmark(obj, 'remove');
+        } 
+        else if (project.tasks.includes(obj) ||
+        project.priorityTasks.includes(obj)) {
+            project.modifyCheckmark(obj, 'add');    
         }
-    }
+    });
+}
+
+function deleteProjectTask(obj) {
+    const projectsArr = projects.getProjects();
+
+    projectsArr.forEach(project => {
+        if (project.tasks.includes(obj)) {
+            project.deleteTask(obj);
+        }
+
+        if (project.priorityTasks.includes(obj)) {
+            project.deleteTask(obj);
+        }
+    });
 }
 
 function projectName(obj) {
@@ -210,14 +219,17 @@ function projectName(obj) {
     if (!projects.getCurrentProject().title) {
         const projectsArr = projects.getProjects();
 
-        for (let i = 0; i < projectsArr.length; i++) {
-            const tasks = projectsArr[i].tasks;
-
-            if (tasks.includes(obj)) {
+        projectsArr.forEach(project => {
+            if (project.tasks.includes(obj)) {
                 projectName.textContent =
-                ` (${projectsArr[i].title})`;
+                ` (${project.title})`;
             }
-        }
+
+            if (project.priorityTasks.includes(obj)) {
+                projectName.textContent =
+                ` (${project.title})`;
+            }
+        });
     }
 
     return projectName;
@@ -248,7 +260,7 @@ function displayProject(obj) {
     
         projects.setCurrentProject(obj);
     
-        displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+        displayTasks(true);
     }
 
     function deleteProject() {
@@ -258,14 +270,7 @@ function displayProject(obj) {
 
         project.remove();
 
-        if (projects.getCurrentProject() == obj) {
-            const homeLi = document.querySelector('.home-li');
-            setSelectedProject(homeLi);
-
-            projects.setCurrentProject(projects.getHomeProject());
-    
-            displayTasks(projects.getCurrentProject().getPriorityTasks(), true);    
-        }
+        ifSelectedProjectDeleted(obj);
     }
 
     project.appendChild(deleteBtn);
@@ -281,31 +286,38 @@ function setSelectedProject(project) {
     project.classList.add('selected-project');
 }
 
+function ifSelectedProjectDeleted(obj) {
+    if (projects.getCurrentProject() == obj) {
+        const homeLi = document.querySelector('.home-li');
+        setSelectedProject(homeLi);
+
+        projects.setCurrentProject(projects.getHomeProject());
+
+        displayTasks(true);    
+    }
+}
+
 function getTodayProjects() {
     const currentProject = projects.getCurrentProject();
     const projectsArr = projects.getProjects();
 
-    for (let i = 0; i < projectsArr.length; i++) {
-        const tasks = projectsArr[i].tasks;
-        const priorityTasks = projectsArr[i].priorityTasks;
-        const tasksChecked = projectsArr[i].tasksChecked;
-
-        for (let u = 0; u < tasks.length; u++) {
-            if (isToday(parseISO(tasks[u].date))) {
-                currentProject.addTask(tasks[u]);
+    projectsArr.forEach(project => {
+        project.tasks.forEach(task => {
+            if (isToday(parseISO(task.date))) {
+                currentProject.addTask(task);
             }
-        }
+        });
 
-        for (let u = 0; u < priorityTasks.length; u++) {
-            if (isToday(parseISO(priorityTasks[u].date))) {
-                currentProject.addTask(priorityTasks[u], true);
+        project.priorityTasks.forEach(priorityTask => {
+            if (isToday(parseISO(priorityTask.date))) {
+                currentProject.addTask(priorityTask, true);
             }
-        }
+        });
 
-        for (let o = 0; o < tasksChecked.length; o++) {
-            currentProject.modifyCheckmark(tasksChecked[o], 'add');
-        }
-    }
+        project.tasksChecked.forEach(taskChecked => {
+            currentProject.modifyCheckmark(taskChecked, 'add');
+        });
+    });
 }
 
 const homeLi = document.querySelector('.home-li');
@@ -337,7 +349,7 @@ function homeClick() {
 
     projects.setCurrentProject(projects.getHomeProject());
 
-    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+    displayTasks(true);
 
     console.log(projects.getProjects())
 }
@@ -349,7 +361,7 @@ function todayClick() {
 
     getTodayProjects();
 
-    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+    displayTasks(true);
 }
 
 function newTaskClick() {
@@ -367,7 +379,7 @@ function submitTask(event) {
 
     createTask(projects.getCurrentProject());
 
-    displayTasks(projects.getCurrentProject().getPriorityTasks(), true);
+    displayTasks(true);
 }
 
 function cancelTaskClick() {
@@ -389,8 +401,6 @@ function projectSubmit(event) {
     projectForm.style.display = 'none';
 
     createProject();
-
-    displayProject(projects.getProjects());
 }
 
 function cancelProjectClick() {
