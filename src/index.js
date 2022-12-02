@@ -1,5 +1,5 @@
 import './style.css';
-import {isToday, parseISO} from 'date-fns';
+import {isThisWeek, isToday, parseISO} from 'date-fns';
 
 class Task {
     constructor(title, description, date, priority) {
@@ -133,7 +133,6 @@ function task(obj, priority) {
     checkmark.classList.add('checkmark');
     if (projects.getCurrentProject().tasksChecked.includes(obj)) {
         checkmark.textContent = '✔';
-        // checkmark.parentNode.classList.add('checked');
     }
     checkmark.addEventListener('click', addCheckmark);
 
@@ -155,6 +154,9 @@ function task(obj, priority) {
         displayCheckmark(checkmark);
 
         verifyAllProjectsMarks(obj);
+
+        dynamicShow(['newTaskBtn', 'newProjectBtn']);
+        dynamicHide(['taskForm', 'projectForm']);
     }
 
     function deleteTask() {
@@ -163,6 +165,9 @@ function task(obj, priority) {
         deleteProjectTask(obj);
     
         displayTasks(true);
+
+        dynamicShow(['newTaskBtn', 'newProjectBtn']);
+        dynamicHide(['taskForm', 'projectForm']);
     }
 
     task.appendChild(checkmark);
@@ -178,10 +183,8 @@ function task(obj, priority) {
 function displayCheckmark(checkmark) {
     if (checkmark.textContent) {
         checkmark.textContent = '';
-        // checkmark.parentNode.classList.remove('checked');
     } else {
         checkmark.textContent = '✔';
-        // checkmark.parentNode.classList.add('checked');
     }
 }
 
@@ -261,6 +264,9 @@ function displayProject(obj) {
         projects.setCurrentProject(obj);
     
         displayTasks(true);
+
+        dynamicShow(['newTaskBtn', 'newProjectBtn']);
+        dynamicHide(['taskForm', 'projectForm']);
     }
 
     function deleteProject() {
@@ -271,6 +277,9 @@ function displayProject(obj) {
         project.remove();
 
         ifSelectedProjectDeleted(obj);
+
+        dynamicShow(['newTaskBtn', 'newProjectBtn']);
+        dynamicHide(['taskForm', 'projectForm']);
     }
 
     project.appendChild(deleteBtn);
@@ -320,11 +329,37 @@ function getTodayProjects() {
     });
 }
 
+function getWeekProjects() {
+    const currentProject = projects.getCurrentProject();
+    const projectsArr = projects.getProjects();
+
+    projectsArr.forEach(project => {
+        project.tasks.forEach(task => {
+            if (isThisWeek(parseISO(task.date))) {
+                currentProject.addTask(task);
+            }
+        });
+
+        project.priorityTasks.forEach(priorityTask => {
+            if (isThisWeek(parseISO(priorityTask.date))) {
+                currentProject.addTask(priorityTask, true);
+            }
+        });
+
+        project.tasksChecked.forEach(taskChecked => {
+            currentProject.modifyCheckmark(taskChecked, 'add');
+        });
+    });
+}
+
 const homeLi = document.querySelector('.home-li');
 homeLi.addEventListener('click', homeClick);
 
 const todayLi = document.querySelector('.today-li');
-todayLi.addEventListener('click', todayClick)
+todayLi.addEventListener('click', todayClick);
+
+const weekLi = document.querySelector('.week-li');
+weekLi.addEventListener('click', weekClick);
 
 const newTaskBtn = document.querySelector('.new-task-button');
 newTaskBtn.addEventListener('click', newTaskClick);
@@ -351,10 +386,11 @@ function homeClick() {
 
     displayTasks(true);
 
-    console.log(projects.getProjects())
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
 }
 
-function todayClick() {    
+function todayClick() {
     setSelectedProject(todayLi);
 
     projects.setCurrentProject(new Project());
@@ -362,48 +398,116 @@ function todayClick() {
     getTodayProjects();
 
     displayTasks(true);
+
+    dynamicShow(['newProjectBtn']);
+    dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
+}
+
+function weekClick() {
+    setSelectedProject(weekLi);
+
+    projects.setCurrentProject(new Project());
+
+    getWeekProjects();
+
+    displayTasks(true);
+
+    dynamicShow(['newProjectBtn']);
+    dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
 }
 
 function newTaskClick() {
-    newTaskBtn.style.display = 'none';
-    taskForm.style.display = 'block';
-    newProjectBtn.style.display = 'block';
-    projectForm.style.display = 'none';
+    taskForm.reset();
+    projectForm.reset();
+
+    dynamicShow(['taskForm', 'newProjectBtn']);
+    dynamicHide(['newTaskBtn', 'projectForm']);
 }
 
 function submitTask(event) {
     event.preventDefault();
 
-    newTaskBtn.style.display = 'block';
-    taskForm.style.display = 'none';
-
     createTask(projects.getCurrentProject());
 
     displayTasks(true);
+
+    dynamicShow(['newTaskBtn']);
+    dynamicHide(['taskForm']);
 }
 
 function cancelTaskClick() {
-    newTaskBtn.style.display = 'block';
-    taskForm.style.display = 'none';
+    dynamicShow(['newTaskBtn']);
+    dynamicHide(['taskForm']);
 }
 
 function newProjectClick() {
-    newProjectBtn.style.display = 'none';
-    projectForm.style.display = 'block';
-    newTaskBtn.style.display = 'block';
-    taskForm.style.display = 'none';
+    taskForm.reset();
+    projectForm.reset();
+
+    dynamicShow(['projectForm', 'newTaskBtn']);
+    dynamicHide(['newProjectBtn', 'taskForm']);
 }
 
 function projectSubmit(event) {
     event.preventDefault();
 
-    newProjectBtn.style.display = 'block';
-    projectForm.style.display = 'none';
-
     createProject();
+
+    dynamicShow(['newProjectBtn']);
+    dynamicHide(['projectForm']);
 }
 
 function cancelProjectClick() {
-    newProjectBtn.style.display = 'block';
-    projectForm.style.display = 'none';
+    dynamicShow(['newProjectBtn']);
+    dynamicHide(['projectForm']);
+}
+
+function dynamicHide(elements) {
+    const newTaskBtn = document.querySelector('.new-task-button');
+    const taskForm = document.querySelector('.task-form');
+    const newProjectBtn = document.querySelector('.new-project-button');
+    const projectForm = document.querySelector('.project-form');
+
+    if (elements.includes('newTaskBtn')) {
+        newTaskBtn.style.display = 'none';
+    }
+    
+    if (elements.includes('taskForm')) {
+        taskForm.style.display = 'none';
+    }
+
+    if (elements.includes('newProjectBtn')) {
+        newProjectBtn.style.display = 'none';
+    }
+
+    if (elements.includes('projectForm')) {
+        projectForm.style.display = 'none';
+    }
+}
+
+function dynamicShow(elements) {
+    const newTaskBtn = document.querySelector('.new-task-button');
+    const taskForm = document.querySelector('.task-form');
+    const newProjectBtn = document.querySelector('.new-project-button');
+    const projectForm = document.querySelector('.project-form');
+
+    if (elements.includes('newTaskBtn')) {
+        newTaskBtn.style.display = 'block';
+    }
+    
+    if (elements.includes('taskForm')) {
+        taskForm.style.display = 'block';
+    }
+
+    if (elements.includes('newProjectBtn')) {
+        newProjectBtn.style.display = 'block';
+    }
+
+    if (elements.includes('projectForm')) {
+        projectForm.style.display = 'block';
+    }
+
+    if (!projects.getCurrentProject().title) {
+        newTaskBtn.style.display = 'none';
+    }
 }
