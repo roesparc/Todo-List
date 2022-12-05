@@ -18,37 +18,37 @@ class Project {
         this.tasksChecked = [];
     }
 
-    addTask(task, priority) {
-        if (priority) {
+    addTask(task) {
+        if (task.priority) {
             this.priorityTasks.push(task);
         } else {
             this.tasks.push(task);
         }
     }
 
-    deleteTask(obj) {
-        if (obj.priority) {
-            const index = this.priorityTasks.indexOf(obj);
+    deleteTask(task) {
+        if (task.priority) {
+            const index = this.priorityTasks.indexOf(task);
 
             this.priorityTasks.splice(index, 1);
         } else {
-            const index = this.tasks.indexOf(obj);
+            const index = this.tasks.indexOf(task);
 
             this.tasks.splice(index, 1);
         }
 
-        if (this.tasksChecked.includes(obj)) {
-            const index = this.tasksChecked.indexOf(obj);
+        if (this.tasksChecked.includes(task)) {
+            const index = this.tasksChecked.indexOf(task);
 
             this.tasksChecked.splice(index, 1);
         }
     }
 
-    modifyCheckmark(obj, type) {
+    modifyCheckmark(task, type) {
         if (type === 'add') {
-            this.tasksChecked.push(obj);
+            this.tasksChecked.push(task);
         } else {
-            const index = this.tasksChecked.indexOf(obj);
+            const index = this.tasksChecked.indexOf(task);
 
             this.tasksChecked.splice(index, 1);    
         }
@@ -104,7 +104,7 @@ function createTask(project) {
 
     const task = new Task(taskTitle.value, taskDescription.value, taskDate.value, taskPriority.checked);
 
-    project.addTask(task, taskPriority.checked);
+    project.addTask(task);
 }
 
 function displayTasks(priority) {
@@ -129,55 +129,45 @@ function task(obj, priority) {
     const task = document.createElement('div');
     if (priority) {task.classList.add('high-priority-task');}
 
-    const checkmark = document.createElement('div');
-    checkmark.classList.add('checkmark');
-    if (projects.getCurrentProject().tasksChecked.includes(obj)) {
-        checkmark.textContent = '✔';
-    }
-    checkmark.addEventListener('click', addCheckmark);
-
-    const title = document.createElement('h3');
-    title.textContent = obj.title;
-
-    const description = document.createElement('p');
-    description.textContent = obj.description;
-
-    const date = document.createElement('p');
-    date.textContent = obj.date;
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('delete-task-button');
-    deleteBtn.textContent = 'delete';
-    deleteBtn.addEventListener('click', deleteTask);
-
-    function addCheckmark() {
-        displayCheckmark(checkmark);
-
-        verifyAllProjectsMarks(obj);
-
-        dynamicShow(['newTaskBtn', 'newProjectBtn']);
-        dynamicHide(['taskForm', 'projectForm']);
-    }
-
-    function deleteTask() {
-        projects.getCurrentProject().deleteTask(obj);
-
-        deleteProjectTask(obj);
-    
-        displayTasks(true);
-
-        dynamicShow(['newTaskBtn', 'newProjectBtn']);
-        dynamicHide(['taskForm', 'projectForm']);
-    }
+    const checkmark = createCheckmark(obj);
+    const title = createTitle(obj);
+    const description = createDescription(obj);
+    const date = createDate(obj);
+    const editBtn = createEditButton(obj, task);
+    const deleteBtn = createDeleteButton(obj);
 
     task.appendChild(checkmark);
     task.appendChild(title);
     title.appendChild(projectName(obj));
     task.appendChild(description);
     task.appendChild(date);
+    task.appendChild(editBtn);
     task.appendChild(deleteBtn);
 
     return task;
+}
+
+function createCheckmark(obj) {
+    const checkmark = document.createElement('div');
+
+    checkmark.classList.add('checkmark');
+
+    if (projects.getCurrentProject().tasksChecked.includes(obj)) {
+        checkmark.textContent = '✔';
+    }
+
+    checkmark.addEventListener('click', () => checkmarkClick(checkmark, obj));
+
+    return checkmark;
+}
+
+function checkmarkClick(checkmark, obj) {
+    displayCheckmark(checkmark);
+
+    verifyAllProjectsMarks(obj);
+
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
 }
 
 function displayCheckmark(checkmark) {
@@ -190,7 +180,7 @@ function displayCheckmark(checkmark) {
 
 function verifyAllProjectsMarks(obj) {
     const projectsArr = projects.getProjects();
-    
+
     projectsArr.forEach(project => {
         if (project.tasksChecked.includes(obj)) {
             project.modifyCheckmark(obj, 'remove');
@@ -200,6 +190,218 @@ function verifyAllProjectsMarks(obj) {
             project.modifyCheckmark(obj, 'add');    
         }
     });
+}
+
+function createTitle(obj) {
+    const title = document.createElement('h3');
+    title.textContent = obj.title;
+    title.classList.add('task-title');
+
+    return title;
+}
+
+function createDescription(obj) {
+    const description = document.createElement('p');
+    description.textContent = obj.description;
+    description.classList.add('task-description');
+
+    return description;
+}
+
+function createDate(obj) {
+    const date = document.createElement('p');
+    date.textContent = obj.date;
+    date.classList.add('task-date');
+
+    return date;
+}
+
+function createEditButton(obj, task) {
+    const editBtn = document.createElement('button');
+    editBtn.classList.add('edit-task-button');
+    editBtn.textContent = 'edit';
+    editBtn.addEventListener('click',
+    () => editClick(obj, task, editBtn));
+
+    return editBtn;
+}
+
+function editClick(obj, task, editBtn) {
+    createEditForm(obj, task, editBtn);
+
+    clearTaskElements(editBtn);
+}
+
+function clearTaskElements(editBtn) {
+    getCurrentTaskElement(editBtn).description.remove();
+    getCurrentTaskElement(editBtn).date.remove();
+    editBtn.remove();
+}
+
+function createEditForm(obj, task, editBtn) {
+    const editForm = document.createElement('form');
+    editForm.classList.add('edit-form');
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        submitEdit(obj, editForm);
+    });
+
+    const descriptionInput = createDescriptionInput(editBtn);
+    const dateInput = createDateInput(editBtn);
+    const priorityLabel = createPriorityLabel();
+    const priorityInput = createPriorityInput(obj);
+    const acceptChanges = createAcceptButton();
+
+    priorityLabel.appendChild(priorityInput);
+
+    editForm.appendChild(descriptionInput);
+    editForm.appendChild(dateInput);
+    editForm.appendChild(priorityLabel);
+    editForm.appendChild(acceptChanges);
+
+    task.insertBefore(editForm, getCurrentTaskElement(editBtn).deleteBtn);
+}
+
+function createDescriptionInput(editBtn) {
+    const descInp = document.createElement('input');
+    descInp.classList.add('edit-description-input');
+    descInp.setAttribute('placeholder', 'Description');
+    descInp.value =
+    getCurrentTaskElement(editBtn).description.textContent;
+
+    return descInp;
+}
+
+function createDateInput(editBtn) {
+    const dateInp = document.createElement('input');
+    dateInp.type = 'date';
+    dateInp.classList.add('edit-date-input');
+    dateInp.value =
+    getCurrentTaskElement(editBtn).date.textContent;
+
+    return dateInp;
+}
+
+function createPriorityLabel() {
+    const priorityLabel = document.createElement('label');
+    priorityLabel.textContent = 'Mark High Priority';
+
+    return priorityLabel;
+}
+
+function createPriorityInput(obj) {
+    const priorityInp = document.createElement('input');
+    priorityInp.classList.add('edit-priority-input');
+    priorityInp.type = 'checkbox';
+    priorityInp.checked = obj.priority;
+
+    return priorityInp;
+}
+
+function createAcceptButton() {
+    const accept = document.createElement('button');
+    accept.textContent = 'accept';
+
+    return accept;
+}
+
+function submitEdit(obj, editForm) {
+    const isTaskChecked = isChecked(obj);
+
+    applyDescriptionDateChanges(obj, editForm);
+    applyPriorityChanges(obj, editForm);
+    applayCheckmarkChanges(isTaskChecked, obj);
+
+    getTasksForCurrentProject();
+    displayTasks(true);
+}
+
+function getTasksForCurrentProject() {
+    if (!projects.getCurrentProject().title) {
+        const selectedProject = document.querySelector('.selected-project');
+
+        projects.setCurrentProject(new Project());
+
+        if (selectedProject.textContent === 'Today') {
+            getTodayProjects();
+        } else if (selectedProject.textContent === 'This Week') {
+            getWeekProjects();
+        }
+    }
+}
+
+function isChecked(task) {
+    let isChecked = false;
+
+    if (getProjectWithTask(task).tasksChecked.includes(task)) {
+        isChecked = true
+    }
+
+    return isChecked;
+}
+
+function applayCheckmarkChanges(wasChecked, task) {
+    if (wasChecked) {
+        getProjectWithTask(task).tasksChecked.push(task);
+    }
+}
+
+function applyDescriptionDateChanges(obj, editForm) {
+    const descriptionInput = editForm.querySelector('.edit-description-input');
+    const dateInput = editForm.querySelector('.edit-date-input');
+
+    obj.description = descriptionInput.value;
+    obj.date = dateInput.value;
+}
+
+function applyPriorityChanges(obj, editForm) {
+    const project = getProjectWithTask(obj)
+    const priorityInput = editForm.querySelector('.edit-priority-input');
+
+    if (obj.priority !== priorityInput.checked) {
+        deleteProjectTask(obj);
+
+        obj.priority = priorityInput.checked;
+
+        project.addTask(obj);
+    }
+}
+
+function createDeleteButton(obj) {
+    const deleteBtn = document.createElement('button');
+
+    deleteBtn.classList.add('delete-task-button');
+
+    deleteBtn.textContent = 'delete';
+
+    deleteBtn.addEventListener('click', () => deleteTask(obj));
+
+    return deleteBtn;
+}
+
+function deleteTask(obj) {
+    projects.getCurrentProject().deleteTask(obj);
+
+    deleteProjectTask(obj);
+
+    displayTasks(true);
+
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
+}
+
+function getCurrentTaskElement(childElement) {
+    const taskDiv = childElement.parentElement;
+
+    const title = taskDiv.querySelector('.task-title');
+
+    const description = taskDiv.querySelector('.task-description');
+
+    const date = taskDiv.querySelector('.task-date');
+
+    const deleteBtn = taskDiv.querySelector('.delete-task-button');
+
+    return {title, description, date, deleteBtn};
 }
 
 function deleteProjectTask(obj) {
@@ -214,6 +416,20 @@ function deleteProjectTask(obj) {
             project.deleteTask(obj);
         }
     });
+}
+
+function getProjectWithTask(obj) {
+    let projectIndex;
+    const projectsArr = projects.getProjects();
+
+    for (let i = 0; i < projectsArr.length; i++) {
+        if (projectsArr[i].tasks.includes(obj) ||
+        projectsArr[i].priorityTasks.includes(obj)) {
+            projectIndex = i;
+        }
+    }
+
+    return projectsArr[projectIndex];
 }
 
 function projectName(obj) {
@@ -321,7 +537,7 @@ function getTodayProjects() {
 
         project.priorityTasks.forEach(priorityTask => {
             if (isToday(parseISO(priorityTask.date))) {
-                currentProject.addTask(priorityTask, true);
+                currentProject.addTask(priorityTask);
             }
         });
 
@@ -344,7 +560,7 @@ function getWeekProjects() {
 
         project.priorityTasks.forEach(priorityTask => {
             if (isThisWeek(parseISO(priorityTask.date))) {
-                currentProject.addTask(priorityTask, true);
+                currentProject.addTask(priorityTask);
             }
         });
 
