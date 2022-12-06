@@ -97,13 +97,20 @@ const projects = (() => {
 })();
 
 function createTask(project) {
-    const taskTitle = document.querySelector('#title');
-    const taskDescription = document.querySelector('#description');
-    const taskDate = document.querySelector('#date');
-    const taskPriority = document.querySelector('#priority');
+    const task = createNewTask();
+    addTaskToProject(project, task);
+}
 
-    const task = new Task(taskTitle.value, taskDescription.value, taskDate.value, taskPriority.checked);
+function createNewTask() {
+    const taskTitle = document.querySelector('#title').value;
+    const taskDescription = document.querySelector('#description').value;
+    const taskDate = document.querySelector('#date').value;
+    const taskPriority = document.querySelector('#priority').checked;
 
+    return new Task(taskTitle, taskDescription, taskDate, taskPriority);
+}
+
+function addTaskToProject(project, task) {
     project.addTask(task);
 }
 
@@ -111,21 +118,28 @@ function displayTasks(priority) {
     const taskList = document.querySelector('.tasks');
     if (priority) {taskList.textContent = '';}
 
+    const tasks = getTasksForCurrentProject(priority);
+
+    tasks.forEach(taskObj => {
+        taskList.appendChild(createTaskElement(taskObj, priority));
+    });
+
+    if (priority) {displayTasks(false);}
+}
+
+function getTasksForCurrentProject(priority) {
     let tasks;
+
     if (priority) {
         tasks = projects.getCurrentProject().priorityTasks;
     } else {
         tasks = projects.getCurrentProject().tasks;
     }
 
-    tasks.forEach(taskObj => {
-        taskList.appendChild(task(taskObj, priority));
-    });
-
-    if (priority) {displayTasks(false);}
+    return tasks;
 }
 
-function task(obj, priority) {
+function createTaskElement(obj, priority) {
     const task = document.createElement('div');
     if (priority) {task.classList.add('high-priority-task');}
 
@@ -226,10 +240,36 @@ function createEditButton(obj, task) {
     return editBtn;
 }
 
+function createDeleteButton(obj) {
+    const deleteBtn = document.createElement('button');
+
+    deleteBtn.classList.add('delete-task-button');
+
+    deleteBtn.textContent = 'delete';
+
+    deleteBtn.addEventListener('click', () => deleteTask(obj));
+
+    return deleteBtn;
+}
+
+function deleteTask(obj) {
+    projects.getCurrentProject().deleteTask(obj);
+
+    deleteProjectTask(obj);
+
+    displayTasks(true);
+
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
+}
+
 function editClick(obj, task, editBtn) {
     createEditForm(obj, task, editBtn);
 
     clearTaskElements(editBtn);
+
+    dynamicHide(['taskForm', 'projectForm']);
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
 }
 
 function clearTaskElements(editBtn) {
@@ -312,22 +352,8 @@ function submitEdit(obj, editForm) {
     applyPriorityChanges(obj, editForm);
     applayCheckmarkChanges(isTaskChecked, obj);
 
-    getTasksForCurrentProject();
+    getTasksForProject();
     displayTasks(true);
-}
-
-function getTasksForCurrentProject() {
-    if (!projects.getCurrentProject().title) {
-        const selectedProject = document.querySelector('.selected-project');
-
-        projects.setCurrentProject(new Project());
-
-        if (selectedProject.textContent === 'Today') {
-            getTodayProjects();
-        } else if (selectedProject.textContent === 'This Week') {
-            getWeekProjects();
-        }
-    }
 }
 
 function isChecked(task) {
@@ -338,12 +364,6 @@ function isChecked(task) {
     }
 
     return isChecked;
-}
-
-function applayCheckmarkChanges(wasChecked, task) {
-    if (wasChecked) {
-        getProjectWithTask(task).tasksChecked.push(task);
-    }
 }
 
 function applyDescriptionDateChanges(obj, editForm) {
@@ -363,42 +383,36 @@ function applyPriorityChanges(obj, editForm) {
 
         obj.priority = priorityInput.checked;
 
-        project.addTask(obj);
+        addTaskToProject(project, obj);
     }
 }
 
-function createDeleteButton(obj) {
-    const deleteBtn = document.createElement('button');
-
-    deleteBtn.classList.add('delete-task-button');
-
-    deleteBtn.textContent = 'delete';
-
-    deleteBtn.addEventListener('click', () => deleteTask(obj));
-
-    return deleteBtn;
+function applayCheckmarkChanges(wasChecked, task) {
+    if (wasChecked) {
+        getProjectWithTask(task).tasksChecked.push(task);
+    }
 }
 
-function deleteTask(obj) {
-    projects.getCurrentProject().deleteTask(obj);
+function getTasksForProject() {
+    if (!projects.getCurrentProject().title) {
+        const selectedProject = document.querySelector('.selected-project');
 
-    deleteProjectTask(obj);
+        projects.setCurrentProject(new Project());
 
-    displayTasks(true);
-
-    dynamicShow(['newTaskBtn', 'newProjectBtn']);
-    dynamicHide(['taskForm', 'projectForm']);
+        if (selectedProject.textContent === 'Today') {
+            getTodayProjects();
+        } else if (selectedProject.textContent === 'This Week') {
+            getWeekProjects();
+        }
+    }
 }
 
 function getCurrentTaskElement(childElement) {
     const taskDiv = childElement.parentElement;
 
     const title = taskDiv.querySelector('.task-title');
-
     const description = taskDiv.querySelector('.task-description');
-
     const date = taskDiv.querySelector('.task-date');
-
     const deleteBtn = taskDiv.querySelector('.delete-task-button');
 
     return {title, description, date, deleteBtn};
@@ -455,54 +469,69 @@ function projectName(obj) {
 }
 
 function createProject() {
-    const projectsNav = document.querySelector('.projects-nav');
-    const projectName = document.querySelector('#project-name');
+    const project = createNewProject();
+    addAndAppendProject(project);
+}
 
-    const project = new Project(projectName.value);
+function createNewProject() {
+    const projectName = document.querySelector('#project-name').value;
+
+    return new Project(projectName);
+}
+
+function addAndAppendProject(project) {
+    const projectsNav = document.querySelector('.projects-nav');
 
     projects.addProject(project);
 
-    projectsNav.appendChild(displayProject(project));
+    projectsNav.appendChild(createProjectElement(project));
 }
 
-function displayProject(obj) {
+function createProjectElement(obj) {
     const project = document.createElement('li');
     project.textContent = obj.title;
-    project.addEventListener('click', projectClick);
+    project.addEventListener('click', (e) => {
+        if (e.target === project) {
+            projectClick(project, obj);
+        }
+    });
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'delete';
-    deleteBtn.addEventListener('click', deleteProject);
-
-    function projectClick() {
-        setSelectedProject(project);
-    
-        projects.setCurrentProject(obj);
-    
-        displayTasks(true);
-
-        dynamicShow(['newTaskBtn', 'newProjectBtn']);
-        dynamicHide(['taskForm', 'projectForm']);
-
-        displayProjectName();
-    }
-
-    function deleteProject() {
-        project.removeEventListener('click', projectClick);
-
-        projects.deleteProject(obj);
-
-        project.remove();
-
-        ifSelectedProjectDeleted(obj);
-
-        dynamicShow(['newTaskBtn', 'newProjectBtn']);
-        dynamicHide(['taskForm', 'projectForm']);
-    }
+    const deleteBtn = createDeleteProjectButton(project, obj);
 
     project.appendChild(deleteBtn);
 
     return project;
+}
+
+function createDeleteProjectButton(project, obj) {
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'delete';
+    deleteBtn.addEventListener('click', () => deleteProject(project, obj));
+
+    return deleteBtn;
+}
+
+function deleteProject(project, obj) {
+    projects.deleteProject(obj);
+
+    project.remove();
+
+    ifSelectedProjectDeleted(obj);
+
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
+}
+
+function projectClick(project, obj) {
+    setSelectedProject(project);
+    projects.setCurrentProject(obj);
+
+    displayTasks(true);
+
+    dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicHide(['taskForm', 'projectForm']);
+
+    displayProjectName();
 }
 
 function setSelectedProject(project) {
@@ -520,6 +549,8 @@ function ifSelectedProjectDeleted(obj) {
 
         projects.setCurrentProject(projects.getHomeProject());
 
+        displayProjectName();
+
         displayTasks(true);    
     }
 }
@@ -531,13 +562,13 @@ function getTodayProjects() {
     projectsArr.forEach(project => {
         project.tasks.forEach(task => {
             if (isToday(parseISO(task.date))) {
-                currentProject.addTask(task);
+                addTaskToProject(currentProject, task);
             }
         });
 
         project.priorityTasks.forEach(priorityTask => {
             if (isToday(parseISO(priorityTask.date))) {
-                currentProject.addTask(priorityTask);
+                addTaskToProject(currentProject, priorityTask);
             }
         });
 
@@ -554,13 +585,13 @@ function getWeekProjects() {
     projectsArr.forEach(project => {
         project.tasks.forEach(task => {
             if (isThisWeek(parseISO(task.date))) {
-                currentProject.addTask(task);
+                addTaskToProject(currentProject, task);
             }
         });
 
         project.priorityTasks.forEach(priorityTask => {
             if (isThisWeek(parseISO(priorityTask.date))) {
-                currentProject.addTask(priorityTask);
+                addTaskToProject(currentProject, priorityTask);
             }
         });
 
@@ -579,6 +610,56 @@ function displayProjectName(title) {
         projectName.textContent = currentProject.title;
     } else {
         projectName.textContent = title;
+    }
+}
+
+function dynamicHide(elements) {
+    const newTaskBtn = document.querySelector('.new-task-button');
+    const taskForm = document.querySelector('.task-form');
+    const newProjectBtn = document.querySelector('.new-project-button');
+    const projectForm = document.querySelector('.project-form');
+
+    if (elements.includes('newTaskBtn')) {
+        newTaskBtn.style.display = 'none';
+    }
+    
+    if (elements.includes('taskForm')) {
+        taskForm.style.display = 'none';
+    }
+
+    if (elements.includes('newProjectBtn')) {
+        newProjectBtn.style.display = 'none';
+    }
+
+    if (elements.includes('projectForm')) {
+        projectForm.style.display = 'none';
+    }
+}
+
+function dynamicShow(elements) {
+    const newTaskBtn = document.querySelector('.new-task-button');
+    const taskForm = document.querySelector('.task-form');
+    const newProjectBtn = document.querySelector('.new-project-button');
+    const projectForm = document.querySelector('.project-form');
+
+    if (elements.includes('newTaskBtn')) {
+        newTaskBtn.style.display = 'block';
+    }
+    
+    if (elements.includes('taskForm')) {
+        taskForm.style.display = 'block';
+    }
+
+    if (elements.includes('newProjectBtn')) {
+        newProjectBtn.style.display = 'block';
+    }
+
+    if (elements.includes('projectForm')) {
+        projectForm.style.display = 'block';
+    }
+
+    if (!projects.getCurrentProject().title) {
+        newTaskBtn.style.display = 'none';
     }
 }
 
@@ -696,54 +777,4 @@ function projectSubmit(event) {
 function cancelProjectClick() {
     dynamicShow(['newProjectBtn']);
     dynamicHide(['projectForm']);
-}
-
-function dynamicHide(elements) {
-    const newTaskBtn = document.querySelector('.new-task-button');
-    const taskForm = document.querySelector('.task-form');
-    const newProjectBtn = document.querySelector('.new-project-button');
-    const projectForm = document.querySelector('.project-form');
-
-    if (elements.includes('newTaskBtn')) {
-        newTaskBtn.style.display = 'none';
-    }
-    
-    if (elements.includes('taskForm')) {
-        taskForm.style.display = 'none';
-    }
-
-    if (elements.includes('newProjectBtn')) {
-        newProjectBtn.style.display = 'none';
-    }
-
-    if (elements.includes('projectForm')) {
-        projectForm.style.display = 'none';
-    }
-}
-
-function dynamicShow(elements) {
-    const newTaskBtn = document.querySelector('.new-task-button');
-    const taskForm = document.querySelector('.task-form');
-    const newProjectBtn = document.querySelector('.new-project-button');
-    const projectForm = document.querySelector('.project-form');
-
-    if (elements.includes('newTaskBtn')) {
-        newTaskBtn.style.display = 'block';
-    }
-    
-    if (elements.includes('taskForm')) {
-        taskForm.style.display = 'block';
-    }
-
-    if (elements.includes('newProjectBtn')) {
-        newProjectBtn.style.display = 'block';
-    }
-
-    if (elements.includes('projectForm')) {
-        projectForm.style.display = 'block';
-    }
-
-    if (!projects.getCurrentProject().title) {
-        newTaskBtn.style.display = 'none';
-    }
 }
