@@ -4,20 +4,6 @@ import Project from './project';
 import projectList from './projectList';
 import projectDOM from '../DOM/projectDOM';
 
-function verifyAllProjectsMarks(obj) {
-    const projectsArr = projectList.getProjects();
-
-    projectsArr.forEach(project => {
-        if (project.tasksChecked.includes(obj)) {
-            project.modifyCheckmark(obj, 'remove');
-        } 
-        else if (project.tasks.includes(obj) ||
-        project.priorityTasks.includes(obj)) {
-            project.modifyCheckmark(obj, 'add');    
-        }
-    });
-}
-
 function getTasksForProject() {
     if (!projectList.getCurrentProject().title) {
         const selectedProject = document.querySelector('.selected-project');
@@ -77,10 +63,6 @@ function getTodayProjects() {
                 taskLogic.addTaskToProject(currentProject, priorityTask);
             }
         });
-
-        project.tasksChecked.forEach(taskChecked => {
-            currentProject.modifyCheckmark(taskChecked, 'add');
-        });
     });
 }
 
@@ -100,15 +82,10 @@ function getWeekProjects() {
                 taskLogic.addTaskToProject(currentProject, priorityTask);
             }
         });
-
-        project.tasksChecked.forEach(taskChecked => {
-            currentProject.modifyCheckmark(taskChecked, 'add');
-        });
     });
 }
 
 export default {
-    verifyAllProjectsMarks,
     getTasksForProject,
     deleteProjectTask,
     createProject,

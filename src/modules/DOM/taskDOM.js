@@ -1,4 +1,3 @@
-import projectLogic from '../app_logic/projectLogic';
 import taskLogic from '../app_logic/taskLogic';
 import projectList from '../app_logic/projectList';
 import dynamicClick from './dynamicClick';
@@ -43,7 +42,7 @@ function createCheckmark(obj) {
 
     checkmark.classList.add('checkmark');
 
-    if (projectList.getCurrentProject().tasksChecked.includes(obj)) {
+    if (obj.isCompleted) {
         checkmark.textContent = '✔';
     }
 
@@ -55,7 +54,7 @@ function createCheckmark(obj) {
 function checkmarkClick(checkmark, obj) {
     displayCheckmark(checkmark);
 
-    projectLogic.verifyAllProjectsMarks(obj);
+    taskLogic.updateTaskStatus(obj);
 
     dynamicClick.dynamicShow(['newTaskBtn', 'newProjectBtn']);
     dynamicClick.dynamicHide(['taskForm', 'projectForm']);

@@ -1,13 +1,14 @@
-import Project from './project';
+import { updateStorage } from "../storage";
 
 function newProjectList() {
-    const homeProject = new Project('Home');
-    let projects = [homeProject];
-    let currentProject = homeProject;
+    let projects = [];
+    let currentProject;
 
     return {
         addProject: (project) => {
             projects.push(project);
+
+            updateStorage();
         },
 
         getProjects: () => {
@@ -18,6 +19,8 @@ function newProjectList() {
             const index = projects.indexOf(obj);
     
             projects.splice(index, 1);
+
+            updateStorage();
         },
 
         getCurrentProject: () => {
@@ -29,7 +32,7 @@ function newProjectList() {
         },
     
         getHomeProject: () => {
-            return homeProject;
+            return projects[0];
         }    
     };
 }

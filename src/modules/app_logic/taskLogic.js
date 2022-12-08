@@ -3,6 +3,7 @@ import projectList from './projectList';
 import Task from './task';
 import dynamicClick from '../DOM/dynamicClick';
 import displayTasks from '../DOM/taskDOM';
+import { updateStorage } from '../storage';
 
 function createTask(project) {
     const task = createNewTask();
@@ -34,6 +35,16 @@ function getTasksForCurrentProject(priority) {
     return tasks;
 }
 
+function updateTaskStatus(task) {
+    if (task.isCompleted) {
+        task.isCompleted = false;
+    } else {
+        task.isCompleted = true;
+    }
+
+    updateStorage();
+}
+
 function deleteTask(obj) {
     projectList.getCurrentProject().deleteTask(obj);
 
@@ -46,24 +57,13 @@ function deleteTask(obj) {
 }
 
 function submitEdit(obj, editForm) {
-    const isTaskChecked = isChecked(obj);
-
     applyDescriptionDateChanges(obj, editForm);
     applyPriorityChanges(obj, editForm);
-    applayCheckmarkChanges(isTaskChecked, obj);
 
     projectLogic.getTasksForProject();
     displayTasks(true);
-}
 
-function isChecked(task) {
-    let isChecked = false;
-
-    if (getProjectWithTask(task).tasksChecked.includes(task)) {
-        isChecked = true
-    }
-
-    return isChecked;
+    updateStorage();
 }
 
 function applyDescriptionDateChanges(obj, editForm) {
@@ -87,12 +87,6 @@ function applyPriorityChanges(obj, editForm) {
     }
 }
 
-function applayCheckmarkChanges(wasChecked, task) {
-    if (wasChecked) {
-        getProjectWithTask(task).tasksChecked.push(task);
-    }
-}
-
 function getProjectWithTask(obj) {
     let projectIndex;
     const projectsArr = projectList.getProjects();
@@ -112,11 +106,10 @@ export default {
     createNewTask,
     addTaskToProject,
     getTasksForCurrentProject,
+    updateTaskStatus,
     deleteTask,
     submitEdit,
-    isChecked,
     applyDescriptionDateChanges,
     applyPriorityChanges,
-    applayCheckmarkChanges,
     getProjectWithTask
 }
