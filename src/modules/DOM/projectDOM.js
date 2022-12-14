@@ -9,25 +9,62 @@ function appendProject(project) {
 }
 
 function createProjectElement(obj) {
-    const project = document.createElement('li');
-    project.textContent = obj.title;
-    project.addEventListener('click', (e) => {
-        if (e.target === project) {
-            projectClick(project, obj);
-        }
-    });
-
+    const project = createProjectLi(obj);
+    const infoDiv = createProjectInfo();
+    const projectIcon = createProjectIcon();
+    const projectTitle = createProjectTitle(obj);
     const deleteBtn = createDeleteProjectButton(project, obj);
 
+    project.appendChild(infoDiv);
+    infoDiv.appendChild(projectIcon);
+    infoDiv.appendChild(projectTitle);
     project.appendChild(deleteBtn);
 
     return project;
 }
 
+function createProjectLi(obj) {
+    const project = document.createElement('li');
+    project.addEventListener('click', () => projectClick(project, obj));
+
+    return project;
+}
+
+function createProjectInfo() {
+    const projectInfo = document.createElement('div');
+    projectInfo.classList.add('project-info-div');
+
+    return projectInfo;
+}
+
+function createProjectTitle(obj) {
+    const title = document.createElement('div');
+    title.textContent = obj.title;
+
+    return title;
+}
+
+function createProjectIcon() {
+    const icon = document.createElement('i');
+    icon.classList.add('fa-solid');
+    icon.classList.add('fa-list-check');
+
+    return icon;
+}
+
 function createDeleteProjectButton(project, obj) {
     const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'delete';
-    deleteBtn.addEventListener('click', () => deleteProject(project, obj));
+    deleteBtn.classList.add('delete-project');
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteProject(project, obj)
+    });
+
+    const deleteIcon = document.createElement('i');
+    deleteIcon.classList.add('fa-regular');
+    deleteIcon.classList.add('fa-trash-can');
+
+    deleteBtn.appendChild(deleteIcon);
 
     return deleteBtn;
 }

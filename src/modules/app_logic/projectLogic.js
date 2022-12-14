@@ -10,9 +10,9 @@ function getTasksForProject() {
 
         projectList.setCurrentProject(new Project());
 
-        if (selectedProject.textContent === 'Today') {
+        if (selectedProject.textContent === ' Today') {
             getTodayProjects();
-        } else if (selectedProject.textContent === 'This Week') {
+        } else if (selectedProject.textContent === ' This Week') {
             getWeekProjects();
         }
     }

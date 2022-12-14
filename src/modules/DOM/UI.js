@@ -56,7 +56,7 @@ function todayClick() {
     displayTasks(true);
 
     dynamicClick.dynamicShow(['newProjectBtn']);
-    dynamicClick.dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
+    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 
     projectDOM.displayProjectName('Today');
 }
@@ -71,7 +71,7 @@ function weekClick() {
     displayTasks(true);
 
     dynamicClick.dynamicShow(['newProjectBtn']);
-    dynamicClick.dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
+    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 
     projectDOM.displayProjectName('This Week');
 }
@@ -81,7 +81,7 @@ function newTaskClick() {
     projectForm.reset();
 
     dynamicClick.dynamicShow(['taskForm', 'newProjectBtn']);
-    dynamicClick.dynamicHide(['newTaskBtn', 'projectForm']);
+    dynamicClick.dynamicHide(['projectForm']);
 }
 
 function submitTask(event) {

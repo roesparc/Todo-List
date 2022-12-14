@@ -16,10 +16,8 @@ export default function displayTasks(priority) {
 }
 
 function createTaskElement(obj, priority) {
-    const task = document.createElement('div');
-    if (priority) {task.classList.add('high-priority-task');}
-
-    const checkmark = createCheckmark(obj);
+    const task = createTaskDiv(priority);
+    const checkmark = createCheckmark(task, obj);
     const title = createTitle(obj);
     const description = createDescription(obj);
     const date = createDate(obj);
@@ -37,22 +35,34 @@ function createTaskElement(obj, priority) {
     return task;
 }
 
-function createCheckmark(obj) {
+function createTaskDiv(priority) {
+    const task = document.createElement('div');
+    task.classList.add('task');
+    if (priority) {task.classList.add('high-priority-task');}
+
+    return task
+}
+
+function createCheckmark(task, obj) {
     const checkmark = document.createElement('div');
-
     checkmark.classList.add('checkmark');
+    checkmark.addEventListener('click',
+    () => checkmarkClick(checkmark, obj, task));
 
-    if (obj.isCompleted) {
-        checkmark.textContent = '✔';
-    }
-
-    checkmark.addEventListener('click', () => checkmarkClick(checkmark, obj));
+    checkTaskCompletion(checkmark, obj, task)
 
     return checkmark;
 }
 
-function checkmarkClick(checkmark, obj) {
-    displayCheckmark(checkmark);
+function checkTaskCompletion(checkmark, obj, task) {
+    if (obj.isCompleted) {
+        checkmark.textContent = '✔';
+        task.classList.add('completed');
+    }
+}
+
+function checkmarkClick(checkmark, obj, task) {
+    displayCheckmark(checkmark, task);
 
     taskLogic.updateTaskStatus(obj);
 
@@ -60,11 +70,13 @@ function checkmarkClick(checkmark, obj) {
     dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 }
 
-function displayCheckmark(checkmark) {
+function displayCheckmark(checkmark, task) {
     if (checkmark.textContent) {
         checkmark.textContent = '';
+        task.classList.remove('completed');
     } else {
         checkmark.textContent = '✔';
+        task.classList.add('completed');
     }
 }
 
@@ -93,9 +105,10 @@ function createDate(obj) {
 }
 
 function createEditButton(obj, task) {
-    const editBtn = document.createElement('button');
+    const editBtn = document.createElement('i');
+    editBtn.classList.add('fa-solid');
+    editBtn.classList.add('fa-pen-to-square');
     editBtn.classList.add('edit-task-button');
-    editBtn.textContent = 'edit';
     editBtn.addEventListener('click',
     () => editClick(obj, task, editBtn));
 
@@ -103,12 +116,10 @@ function createEditButton(obj, task) {
 }
 
 function createDeleteButton(obj) {
-    const deleteBtn = document.createElement('button');
-
+    const deleteBtn = document.createElement('i');
+    deleteBtn.classList.add('fa-regular');
+    deleteBtn.classList.add('fa-trash-can');
     deleteBtn.classList.add('delete-task-button');
-
-    deleteBtn.textContent = 'delete';
-
     deleteBtn.addEventListener('click', () => taskLogic.deleteTask(obj));
 
     return deleteBtn;
@@ -130,13 +141,7 @@ function clearTaskElements(editBtn) {
 }
 
 function createEditForm(obj, task, editBtn) {
-    const editForm = document.createElement('form');
-    editForm.classList.add('edit-form');
-    editForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        taskLogic.submitEdit(obj, editForm);
-    });
-
+    const editForm = createEditFormElement(obj);
     const descriptionInput = createDescriptionInput(editBtn);
     const dateInput = createDateInput(editBtn);
     const priorityLabel = createPriorityLabel();
@@ -146,11 +151,22 @@ function createEditForm(obj, task, editBtn) {
     priorityLabel.appendChild(priorityInput);
 
     editForm.appendChild(descriptionInput);
-    editForm.appendChild(dateInput);
     editForm.appendChild(priorityLabel);
+    editForm.appendChild(dateInput);
     editForm.appendChild(acceptChanges);
 
     task.insertBefore(editForm, getCurrentTaskElement(editBtn).deleteBtn);
+}
+
+function createEditFormElement(obj) {
+    const editForm = document.createElement('form');
+    editForm.classList.add('edit-form');
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        taskLogic.submitEdit(obj, editForm);
+    });
+
+    return editForm;
 }
 
 function createDescriptionInput(editBtn) {
@@ -191,7 +207,12 @@ function createPriorityInput(obj) {
 
 function createAcceptButton() {
     const accept = document.createElement('button');
-    accept.textContent = 'accept';
+
+    const icon = document.createElement('i');
+    icon.classList.add('fa-solid');
+    icon.classList.add('fa-circle-check');
+
+    accept.appendChild(icon);
 
     return accept;
 }
