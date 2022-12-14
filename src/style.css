@@ -262,7 +262,7 @@ main h2 {
     align-items: center;
     flex-shrink: 0;
     margin-right: 0.5rem;
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     border: 2px solid var(--primary-color);
     border-radius: 50%;
     cursor: pointer;
@@ -291,6 +291,7 @@ main h2 {
     overflow: auto;
     padding: 0 0.2rem;
     color: var(--primary-color);
+    font-size: 1.5rem;
 }
 
 .task span {
@@ -341,6 +342,7 @@ main h2 {
 
 .completed .task-title {
     text-decoration: line-through;
+    text-decoration-thickness: 2px;
     color: #808080;
 }
 
@@ -350,11 +352,11 @@ main h2 {
 
 .completed .task-description,
 .completed i {
-    color: #808080;
+    color: #808080b0;
 }
 
 .completed .task-date {
-    background-color: #808080;
+    background-color: #808080b0;
 }
 
 .edit-form {
