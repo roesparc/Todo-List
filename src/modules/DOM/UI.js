@@ -56,7 +56,7 @@ function todayClick() {
     displayTasks(true);
 
     dynamicClick.dynamicShow(['newProjectBtn']);
-    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
+    dynamicClick.dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
 
     projectDOM.displayProjectName('Today');
 }
@@ -71,7 +71,7 @@ function weekClick() {
     displayTasks(true);
 
     dynamicClick.dynamicShow(['newProjectBtn']);
-    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
+    dynamicClick.dynamicHide(['newTaskBtn', 'taskForm', 'projectForm']);
 
     projectDOM.displayProjectName('This Week');
 }
@@ -91,12 +91,10 @@ function submitTask(event) {
 
     displayTasks(true);
 
-    dynamicClick.dynamicShow(['newTaskBtn']);
     dynamicClick.dynamicHide(['taskForm']);
 }
 
 function cancelTaskClick() {
-    dynamicClick.dynamicShow(['newTaskBtn']);
     dynamicClick.dynamicHide(['taskForm']);
 }
 
@@ -104,14 +102,14 @@ function newProjectClick() {
     taskForm.reset();
     projectForm.reset();
 
-    dynamicClick.dynamicShow(['projectForm', 'newTaskBtn']);
+    dynamicClick.dynamicShow(['projectForm']);
     dynamicClick.dynamicHide(['newProjectBtn', 'taskForm']);
 }
 
 function projectSubmit(event) {
     event.preventDefault();
 
-    projectLogic.createProject();
+    projectDOM.appendProject(projectLogic.createProject());
 
     dynamicClick.dynamicShow(['newProjectBtn']);
     dynamicClick.dynamicHide(['projectForm']);
@@ -131,5 +129,5 @@ export default {
     cancelTaskBtn,
     newProjectBtn,
     projectForm,
-    cancelProjectBtn
-}
+    cancelProjectBtn,
+};

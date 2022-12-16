@@ -1,8 +1,7 @@
-import {isThisWeek, isToday, parseISO} from 'date-fns';
-import taskLogic from './taskLogic';
+import { isThisWeek, isToday, parseISO } from 'date-fns';
 import Project from './project';
 import projectList from './projectList';
-import projectDOM from '../DOM/projectDOM';
+import { updateStorage } from './storage';
 
 function getTasksForProject() {
     if (!projectList.getCurrentProject().title) {
@@ -21,7 +20,7 @@ function getTasksForProject() {
 function deleteProjectTask(obj) {
     const projectsArr = projectList.getProjects();
 
-    projectsArr.forEach(project => {
+    projectsArr.forEach((project) => {
         if (project.tasks.includes(obj)) {
             project.deleteTask(obj);
         }
@@ -33,16 +32,13 @@ function deleteProjectTask(obj) {
 }
 
 function createProject() {
-    const project = createNewProject();
-    projectDOM.appendProject(project);
-}
-
-function createNewProject() {
     const projectName = document.querySelector('#project-name').value;
 
     const project = new Project(projectName);
 
     projectList.addProject(project);
+
+    updateStorage();
 
     return project;
 }
@@ -51,16 +47,16 @@ function getTodayProjects() {
     const currentProject = projectList.getCurrentProject();
     const projectsArr = projectList.getProjects();
 
-    projectsArr.forEach(project => {
-        project.tasks.forEach(task => {
+    projectsArr.forEach((project) => {
+        project.tasks.forEach((task) => {
             if (isToday(parseISO(task.date))) {
-                taskLogic.addTaskToProject(currentProject, task);
+                currentProject.addTask(task);
             }
         });
 
-        project.priorityTasks.forEach(priorityTask => {
+        project.priorityTasks.forEach((priorityTask) => {
             if (isToday(parseISO(priorityTask.date))) {
-                taskLogic.addTaskToProject(currentProject, priorityTask);
+                currentProject.addTask(priorityTask);
             }
         });
     });
@@ -70,16 +66,16 @@ function getWeekProjects() {
     const currentProject = projectList.getCurrentProject();
     const projectsArr = projectList.getProjects();
 
-    projectsArr.forEach(project => {
-        project.tasks.forEach(task => {
+    projectsArr.forEach((project) => {
+        project.tasks.forEach((task) => {
             if (isThisWeek(parseISO(task.date))) {
-                taskLogic.addTaskToProject(currentProject, task);
+                currentProject.addTask(task);
             }
         });
 
-        project.priorityTasks.forEach(priorityTask => {
+        project.priorityTasks.forEach((priorityTask) => {
             if (isThisWeek(parseISO(priorityTask.date))) {
-                taskLogic.addTaskToProject(currentProject, priorityTask);
+                currentProject.addTask(priorityTask);
             }
         });
     });
@@ -89,7 +85,6 @@ export default {
     getTasksForProject,
     deleteProjectTask,
     createProject,
-    createNewProject,
     getTodayProjects,
-    getWeekProjects
-}
+    getWeekProjects,
+};

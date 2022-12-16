@@ -1,4 +1,5 @@
 import projectList from '../app_logic/projectList';
+import { updateStorage } from '../app_logic/storage';
 import dynamicClick from './dynamicClick';
 import displayTasks from './taskDOM';
 
@@ -57,7 +58,7 @@ function createDeleteProjectButton(project, obj) {
     deleteBtn.classList.add('delete-project');
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteProject(project, obj)
+        deleteProject(project, obj);
     });
 
     const deleteIcon = document.createElement('i');
@@ -88,14 +89,16 @@ function deleteProject(project, obj) {
 
     ifSelectedProjectDeleted(obj);
 
-    dynamicClick.dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    updateStorage();
+
+    dynamicClick.dynamicShow(['newProjectBtn']);
     dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 }
 
 function setSelectedProject(project) {
     const listItems = document.querySelectorAll('li');
 
-    listItems.forEach(item => item.classList.remove('selected-project'));
+    listItems.forEach((item) => item.classList.remove('selected-project'));
 
     project.classList.add('selected-project');
 }
@@ -109,7 +112,7 @@ function ifSelectedProjectDeleted(obj) {
 
         displayProjectName();
 
-        displayTasks(true);    
+        displayTasks(true);
     }
 }
 
@@ -125,6 +128,14 @@ function displayProjectName(title) {
     }
 }
 
+function appendProjectsFromStorage() {
+    const projects = projectList.getProjects();
+
+    for (let i = 1; i < projects.length; i += 1) {
+        appendProject(projects[i]);
+    }
+}
+
 export default {
     appendProject,
     createProjectElement,
@@ -133,5 +144,6 @@ export default {
     deleteProject,
     setSelectedProject,
     ifSelectedProjectDeleted,
-    displayProjectName
-}
+    displayProjectName,
+    appendProjectsFromStorage,
+};

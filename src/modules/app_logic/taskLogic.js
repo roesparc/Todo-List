@@ -1,13 +1,12 @@
 import projectLogic from './projectLogic';
 import projectList from './projectList';
 import Task from './task';
-import dynamicClick from '../DOM/dynamicClick';
-import displayTasks from '../DOM/taskDOM';
-import { updateStorage } from '../storage';
+import { updateStorage } from './storage';
 
 function createTask(project) {
     const task = createNewTask();
     addTaskToProject(project, task);
+    updateStorage();
 }
 
 function createNewTask() {
@@ -41,8 +40,6 @@ function updateTaskStatus(task) {
     } else {
         task.isCompleted = true;
     }
-
-    updateStorage();
 }
 
 function deleteTask(obj) {
@@ -50,10 +47,7 @@ function deleteTask(obj) {
 
     projectLogic.deleteProjectTask(obj);
 
-    displayTasks(true);
-
-    dynamicClick.dynamicShow(['newTaskBtn', 'newProjectBtn']);
-    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
+    updateStorage();
 }
 
 function submitEdit(obj, editForm) {
@@ -61,7 +55,6 @@ function submitEdit(obj, editForm) {
     applyPriorityChanges(obj, editForm);
 
     projectLogic.getTasksForProject();
-    displayTasks(true);
 
     updateStorage();
 }
@@ -75,7 +68,7 @@ function applyDescriptionDateChanges(obj, editForm) {
 }
 
 function applyPriorityChanges(obj, editForm) {
-    const project = getProjectWithTask(obj)
+    const project = getProjectWithTask(obj);
     const priorityInput = editForm.querySelector('.edit-priority-input');
 
     if (obj.priority !== priorityInput.checked) {
@@ -92,8 +85,8 @@ function getProjectWithTask(obj) {
     const projectsArr = projectList.getProjects();
 
     for (let i = 0; i < projectsArr.length; i++) {
-        if (projectsArr[i].tasks.includes(obj) ||
-        projectsArr[i].priorityTasks.includes(obj)) {
+        if (projectsArr[i].tasks.includes(obj)
+        || projectsArr[i].priorityTasks.includes(obj)) {
             projectIndex = i;
         }
     }
@@ -111,5 +104,5 @@ export default {
     submitEdit,
     applyDescriptionDateChanges,
     applyPriorityChanges,
-    getProjectWithTask
-}
+    getProjectWithTask,
+};

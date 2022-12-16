@@ -4,15 +4,15 @@ import dynamicClick from './dynamicClick';
 
 export default function displayTasks(priority) {
     const taskList = document.querySelector('.tasks');
-    if (priority) {taskList.textContent = '';}
+    if (priority) { taskList.textContent = ''; }
 
     const tasks = taskLogic.getTasksForCurrentProject(priority);
 
-    tasks.forEach(taskObj => {
+    tasks.forEach((taskObj) => {
         taskList.appendChild(createTaskElement(taskObj, priority));
     });
 
-    if (priority) {displayTasks(false);}
+    if (priority) { displayTasks(false); }
 }
 
 function createTaskElement(obj, priority) {
@@ -38,18 +38,20 @@ function createTaskElement(obj, priority) {
 function createTaskDiv(priority) {
     const task = document.createElement('div');
     task.classList.add('task');
-    if (priority) {task.classList.add('high-priority-task');}
+    if (priority) { task.classList.add('high-priority-task'); }
 
-    return task
+    return task;
 }
 
 function createCheckmark(task, obj) {
     const checkmark = document.createElement('div');
     checkmark.classList.add('checkmark');
-    checkmark.addEventListener('click',
-    () => checkmarkClick(checkmark, obj, task));
+    checkmark.addEventListener(
+        'click',
+        () => checkmarkClick(checkmark, obj, task),
+    );
 
-    checkTaskCompletion(checkmark, obj, task)
+    checkTaskCompletion(checkmark, obj, task);
 
     return checkmark;
 }
@@ -66,7 +68,7 @@ function checkmarkClick(checkmark, obj, task) {
 
     taskLogic.updateTaskStatus(obj);
 
-    dynamicClick.dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicClick.dynamicShow(['newProjectBtn']);
     dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 }
 
@@ -109,8 +111,10 @@ function createEditButton(obj, task) {
     editBtn.classList.add('fa-solid');
     editBtn.classList.add('fa-pen-to-square');
     editBtn.classList.add('edit-task-button');
-    editBtn.addEventListener('click',
-    () => editClick(obj, task, editBtn));
+    editBtn.addEventListener(
+        'click',
+        () => editClick(obj, task, editBtn),
+    );
 
     return editBtn;
 }
@@ -120,9 +124,17 @@ function createDeleteButton(obj) {
     deleteBtn.classList.add('fa-regular');
     deleteBtn.classList.add('fa-trash-can');
     deleteBtn.classList.add('delete-task-button');
-    deleteBtn.addEventListener('click', () => taskLogic.deleteTask(obj));
+    deleteBtn.addEventListener('click', () => deleteClick(obj));
 
     return deleteBtn;
+}
+
+function deleteClick(obj) {
+    taskLogic.deleteTask(obj);
+    displayTasks(true);
+
+    dynamicClick.dynamicShow(['newProjectBtn']);
+    dynamicClick.dynamicHide(['taskForm', 'projectForm']);
 }
 
 function editClick(obj, task, editBtn) {
@@ -131,7 +143,7 @@ function editClick(obj, task, editBtn) {
     clearTaskElements(editBtn);
 
     dynamicClick.dynamicHide(['taskForm', 'projectForm']);
-    dynamicClick.dynamicShow(['newTaskBtn', 'newProjectBtn']);
+    dynamicClick.dynamicShow(['newProjectBtn']);
 }
 
 function clearTaskElements(editBtn) {
@@ -163,18 +175,22 @@ function createEditFormElement(obj) {
     editForm.classList.add('edit-form');
     editForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        taskLogic.submitEdit(obj, editForm);
+        submitEdit(obj, editForm);
     });
 
     return editForm;
+}
+
+function submitEdit(obj, editForm) {
+    taskLogic.submitEdit(obj, editForm);
+    displayTasks(true);
 }
 
 function createDescriptionInput(editBtn) {
     const descInp = document.createElement('input');
     descInp.classList.add('edit-description-input');
     descInp.setAttribute('placeholder', 'Description');
-    descInp.value =
-    getCurrentTaskElement(editBtn).description.textContent;
+    descInp.value = getCurrentTaskElement(editBtn).description.textContent;
 
     return descInp;
 }
@@ -183,8 +199,7 @@ function createDateInput(editBtn) {
     const dateInp = document.createElement('input');
     dateInp.type = 'date';
     dateInp.classList.add('edit-date-input');
-    dateInp.value =
-    getCurrentTaskElement(editBtn).date.textContent;
+    dateInp.value = getCurrentTaskElement(editBtn).date.textContent;
 
     return dateInp;
 }
@@ -225,7 +240,9 @@ function getCurrentTaskElement(childElement) {
     const date = taskDiv.querySelector('.task-date');
     const deleteBtn = taskDiv.querySelector('.delete-task-button');
 
-    return {title, description, date, deleteBtn};
+    return {
+        title, description, date, deleteBtn,
+    };
 }
 
 function taskIsFromThisProject(obj) {
@@ -234,15 +251,13 @@ function taskIsFromThisProject(obj) {
     if (!projectList.getCurrentProject().title) {
         const projectsArr = projectList.getProjects();
 
-        projectsArr.forEach(project => {
+        projectsArr.forEach((project) => {
             if (project.tasks.includes(obj)) {
-                projectName.textContent =
-                ` (${project.title})`;
+                projectName.textContent = ` (${project.title})`;
             }
 
             if (project.priorityTasks.includes(obj)) {
-                projectName.textContent =
-                ` (${project.title})`;
+                projectName.textContent = ` (${project.title})`;
             }
         });
     }

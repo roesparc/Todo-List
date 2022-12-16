@@ -1,5 +1,3 @@
-import { updateStorage } from "../storage";
-
 export default class Project {
     constructor(title) {
         this.title = title;
@@ -13,8 +11,6 @@ export default class Project {
         } else {
             this.tasks.push(task);
         }
-
-        updateStorage();
     }
 
     deleteTask(task) {
@@ -27,7 +23,5 @@ export default class Project {
 
             this.tasks.splice(index, 1);
         }
-
-        updateStorage();
     }
 }

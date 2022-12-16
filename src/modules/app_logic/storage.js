@@ -1,6 +1,5 @@
-import Project from "./app_logic/project";
-import projectList from "./app_logic/projectList";
-import projectDOM from "./DOM/projectDOM";
+import Project from './project';
+import projectList from './projectList';
 
 export function updateStorage() {
     localStorage.setItem('projects', JSON.stringify(projectList.getProjects()));
@@ -10,7 +9,7 @@ export function checkStorage() {
     if (localStorage.length) {
         loadProjectsFromStorage();
     } else {
-        createHomeProject()
+        createHomeProject();
     }
 
     projectList.setCurrentProject(projectList.getHomeProject());
@@ -24,9 +23,8 @@ function createHomeProject() {
 function loadProjectsFromStorage() {
     const projects = JSON.parse(localStorage.getItem('projects'));
 
-    projects.forEach(project => {
-        const newProject = addProjectToList(project);
-        appenProjectsToNav(newProject);
+    projects.forEach((project) => {
+        addProjectToList(project);
     });
 }
 
@@ -38,10 +36,4 @@ function addProjectToList(project) {
     projectList.addProject(newProject);
 
     return newProject;
-}
-
-function appenProjectsToNav(newProject) {
-    if (newProject !== projectList.getHomeProject()) {
-        projectDOM.appendProject(newProject);
-    }
 }

@@ -1,39 +1,27 @@
-import { updateStorage } from "../storage";
-
 function newProjectList() {
-    let projects = [];
+    const projects = [];
     let currentProject;
 
     return {
         addProject: (project) => {
             projects.push(project);
-
-            updateStorage();
         },
 
-        getProjects: () => {
-            return projects;
-        },
+        getProjects: () => projects,
 
         deleteProject: (obj) => {
             const index = projects.indexOf(obj);
-    
+
             projects.splice(index, 1);
-
-            updateStorage();
         },
 
-        getCurrentProject: () => {
-            return currentProject;
-        },
-    
+        getCurrentProject: () => currentProject,
+
         setCurrentProject: (project) => {
             currentProject = project;
         },
-    
-        getHomeProject: () => {
-            return projects[0];
-        }    
+
+        getHomeProject: () => projects[0],
     };
 }
 
