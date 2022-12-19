@@ -2,7 +2,7 @@
 
 ## [Live Demo](https://roesparc.github.io/Todo-List/)
 
-![preview](https://user-images.githubusercontent.com/52899682/207667071-c6bc7ac7-c7c0-40d1-9bd8-124d6d6e2358.jpg)
+![preview](https://user-images.githubusercontent.com/52899682/208546009-4bef4f39-03ab-4ecf-8cf7-8d78a7b59da7.jpg)
 
 ## SOLID principles
 
@@ -22,5 +22,5 @@ The main goal of this porject is to implement the SOLID principles, specially, t
 - `localStorage`
 - Modules are separated into coherent pieces
 - Webpack to bundle modules
-- CSS loader
 - [date-fns](https://github.com/date-fns/date-fns) library
+- ESLint and Prettier
