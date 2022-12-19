@@ -104,7 +104,7 @@ function setSelectedProject(project) {
 }
 
 function ifSelectedProjectDeleted(obj) {
-    if (projectList.getCurrentProject() == obj) {
+    if (projectList.getCurrentProject() === obj) {
         const homeLi = document.querySelector('.home-li');
         setSelectedProject(homeLi);
 
@@ -128,7 +128,7 @@ function displayProjectName(title) {
     }
 }
 
-function appendProjectsFromStorage() {
+export function appendProjectsFromStorage() {
     const projects = projectList.getProjects();
 
     for (let i = 1; i < projects.length; i += 1) {
@@ -145,5 +145,4 @@ export default {
     setSelectedProject,
     ifSelectedProjectDeleted,
     displayProjectName,
-    appendProjectsFromStorage,
 };

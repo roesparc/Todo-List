@@ -40,6 +40,8 @@ function updateTaskStatus(task) {
     } else {
         task.isCompleted = true;
     }
+
+    updateStorage();
 }
 
 function deleteTask(obj) {
@@ -84,7 +86,7 @@ function getProjectWithTask(obj) {
     let projectIndex;
     const projectsArr = projectList.getProjects();
 
-    for (let i = 0; i < projectsArr.length; i++) {
+    for (let i = 0; i < projectsArr.length; i += 1) {
         if (projectsArr[i].tasks.includes(obj)
         || projectsArr[i].priorityTasks.includes(obj)) {
             projectIndex = i;
